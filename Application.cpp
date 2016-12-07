@@ -6,17 +6,17 @@
 #include <algorithm>
 #include <cstddef>
 
-Application Application::instance()
+Application *Application::instance()
 {
-    static Application instance;
-    instance.logger = Logger::instance();
+    static Application *instance = new Application();
+    instance->logger = Logger::instance();
     return instance;
 }
 
-void Application::start(Parameters &param)
+void Application::start(Parameters *param)
 {
 
-    Logger::registerLogger(param.logLevel(), param.logToConsole(), param.logToFile());
+    Logger::registerLogger(param->logLevel(), param->logToConsole(), param->logToFile());
     logger->info("Start application.");
 
     logger->debug("Creating space for receive messages.");
@@ -32,10 +32,10 @@ void Application::start(Parameters &param)
     SafeList<Game> *games = new SafeList<Game>();
 
     logger->debug("Creating network thread.");
-    std::thread network_service(&Thread::run, NetworkService(receive_queue, param.port()));
+    std::thread network_service(&Thread::run, NetworkService(receive_queue, param->port()));
 
     logger->debug("Creating router thread.");
-    std::thread game_service(&Thread::run, RouterService(receive_queue, send_queue, users, games, param.matchesCount(), param.matchesChoice()));
+    std::thread game_service(&Thread::run, RouterService(receive_queue, send_queue, users, games, param->matchesCount(), param->matchesChoice()));
 
     logger->debug("Creating sender thread.");
     std::thread sender_service(&Thread::run, SenderService(send_queue));

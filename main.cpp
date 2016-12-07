@@ -4,6 +4,5 @@
 
 int main(int argc, char **argv)
 {
-    Parameters params = Parameters(argc, argv);
-    Application::instance().start(params); return 0;
+    Application::instance->start(new Parameters(argc, argv)); return 0;
 }

@@ -14,8 +14,8 @@ class Application {
 private:
     Logger *logger;
 public:
-    static Application instance();
-    void start(Parameters &param);
+    static Application *instance;
+    void start(Parameters *param);
 };
 
 
