@@ -5,30 +5,12 @@
 #ifndef NIMSERVER_USERMANAGER_H
 #define NIMSERVER_USERMANAGER_H
 
-#include "SafeList.cpp"
-#include "SafeQueue.cpp"
-#include "User.h"
-#include "Game.h"
-#include "SNDMessage.h"
+#include "Manager.h"
 
-class UserManager {
-private:
-    Logger *logger;
-    SafeList<User> *users;
-    SafeList<Game> *games;
-    SafeQueue<SNDMessage> *send_queue;
-
+class UserManager : public Manager {
 public:
-    UserManager(SafeList<User> *users, SafeList<Game> *games, SafeQueue<SNDMessage> *send_queue)
-    {
-        this->users = users;
-        this->games = games;
-        this->send_queue = send_queue;
-        this->logger = Logger::instance();
-    }
-    User &findUserBySocket(int socket);
-    User &findUserByLoginname(std::string const &loginname);
-    int findUserIndex(User &user);
+    UserManager(SafeList<User> *users, SafeList<Game> *games,SafeQueue<RCVMessage> *receive_queue,  SafeQueue<SNDMessage> *send_queue, int const matches_layers, int const matches_taking)
+            : Manager(users, games, receive_queue, send_queue, matches_layers, matches_taking) {}
 
     void hard_logout(int const socket, std::vector<std::string> parameters);
     void all_users(int const socket, std::vector<std::string> parameters);

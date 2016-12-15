@@ -35,12 +35,12 @@ void Application::start(Parameters *param)
     std::thread network_service(&Thread::run, NetworkService(receive_queue, param->port()));
 
     logger->debug("Creating router thread.");
-    std::thread game_service(&Thread::run, RouterService(receive_queue, send_queue, users, games, param->matchesCount(), param->matchesChoice()));
+    std::thread router_service(&Thread::run, RouterService(receive_queue, send_queue, users, games, param->matchesLayers(), param->matchesTaking()));
 
     logger->debug("Creating sender thread.");
     std::thread sender_service(&Thread::run, SenderService(send_queue));
 
     network_service.join();
-    game_service.join();
+    router_service.join();
     sender_service.join();
 }

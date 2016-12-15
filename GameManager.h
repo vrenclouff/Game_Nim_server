@@ -10,19 +10,18 @@
 #include "User.h"
 #include "Game.h"
 #include "SNDMessage.h"
+#include "Manager.h"
 
-class GameManager {
-private:
-    SafeList<User> *users;
-    SafeList<Game> *games;
-    SafeQueue<SNDMessage> *send_queue;
+class GameManager : public Manager {
+
 public:
-    GameManager(SafeList<User> *users, SafeList<Game> *games, SafeQueue<SNDMessage> *send_queue)
-    {
-        this->users = users;
-        this->games = games;
-        this->send_queue = send_queue;
-    }
+    GameManager(SafeList<User> *users, SafeList<Game> *games,SafeQueue<RCVMessage> *receive_queue,  SafeQueue<SNDMessage> *send_queue, int const matches_layers, int const matches_taking)
+            : Manager(users, games, receive_queue, send_queue, matches_layers, matches_taking) {}
+
+    void join(int const socket, std::vector<std::string> parameters);
+    void invite(int const socket, std::vector<std::string> parameters);
+    void challenger(int const socket, std::vector<std::string> parameters);
+
 };
 
 

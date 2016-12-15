@@ -26,7 +26,7 @@ private:
 
     void initSocket(int port);
     void startListeningLoop();
-    bool validationMessage(std::string const &message, std::string &validated_message);
+    void validationMessage(std::string const &original_message, std::vector<std::string> &validated_messages);
 
 public:
     NetworkService(SafeQueue<RCVMessage> *queue, int const port)

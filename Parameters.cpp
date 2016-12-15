@@ -19,4 +19,10 @@ void Parameters::parse(int argc, char **argv)
 
     MainOptions::Option* logLevel = mo.getParamFromKey("-l");
     _log_level = logLevel ? atoi((*logLevel).second.c_str()) : DEFAULT_LOG_LEVEL;
+
+    MainOptions::Option* matchesLayers = mo.getParamFromKey("-m");
+    _matches_layers = matchesLayers ? atoi((*matchesLayers).second.c_str()) : DEFAULT_MATCHES_LAYERS;
+
+    MainOptions::Option* matchesTaking = mo.getParamFromKey("-t");
+    _matches_taking = matchesTaking ? atoi((*matchesTaking).second.c_str()) : DEFAULT_MATCHES_TAKING;
 }

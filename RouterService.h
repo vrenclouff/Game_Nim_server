@@ -26,21 +26,21 @@ private:
     SafeList<User> *users;
     SafeList<Game> *games;
 
-    int matches_count;
-    int matches_choice;
+    int matches_layers;
+    int matches_taking;
 
     void startRouterLoop();
 
 public:
-    RouterService(SafeQueue<RCVMessage> *receive_queue, SafeQueue<SNDMessage> *send_queue, SafeList<User> *users, SafeList<Game> *games, int const matches_count, int const matches_choice)
+    RouterService(SafeQueue<RCVMessage> *receive_queue, SafeQueue<SNDMessage> *send_queue, SafeList<User> *users, SafeList<Game> *games, int const matches_layers, int const matches_taking)
     {
         this->receive_queue = receive_queue;
         this->send_queue = send_queue;
         this->users = users;
         this->games = games;
         this->logger = Logger::instance();
-        this->matches_choice = matches_choice;
-        this->matches_count = matches_count;
+        this->matches_taking = matches_taking;
+        this->matches_layers = matches_layers;
     }
 
     virtual void run();

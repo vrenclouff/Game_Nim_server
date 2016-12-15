@@ -125,16 +125,16 @@ void NetworkService::startListeningLoop()
                     ioctl(fd, FIONREAD, &a2read);
                     if (a2read > 0)
                     {
-                        recv(fd, &cbuf, a2read, 0);
-                        std::string validated_message;
-                        if (validationMessage(cbuf, validated_message))
+                        int ln = recv(fd, &cbuf, a2read, 0);
+                        cbuf[ln] = '\0';
+
+                        std::vector<std::string> receive_messages;
+                        validationMessage(cbuf, receive_messages);
+                        for(int i=0;i<receive_messages.size();i++)
                         {
+                            std::string validated_message = receive_messages[i];
                             logger->info(StringUtils::format(4, "User with ID ", std::to_string(fd).c_str(), " receive message: ", validated_message.c_str()));
                             queue->push(RCVMessage(fd, validated_message));
-                        }else
-                        {
-                            const std::string msg = "INVALID MESSAGE";
-                            send(fd, msg.c_str(), msg.length(), 0);
                         }
                         memset(cbuf, 0, sizeof cbuf);
                     } else
@@ -160,7 +160,7 @@ void NetworkService::startListeningLoop()
  * @param valided_message - zvalidovana zprava (oriznuta o cislo checksumy, pocatecni a konecne znacky)
  * @return true/false vysledek validace
  */
-bool NetworkService::validationMessage(std::string const &original_message, std::string &valided_message)
+void NetworkService::validationMessage(std::string const &original_message, std::vector<std::string> &validated_messages)
 {
     logger->debug(StringUtils::format(2, "Validation receive message: ", original_message.c_str()));
 
@@ -168,20 +168,22 @@ bool NetworkService::validationMessage(std::string const &original_message, std:
     if (original_message.length() < 3)
     {
         logger->debug("The message does not have correct length.");
-        return false;
+        return;
     }
 
     /* Kontrola pocatecniho znacky zpravy */
-    if (original_message[1] != STX)
+    char stx_mark = original_message[1];
+    if (stx_mark != STX)
     {
         logger->debug("The message does not have STX mark.");
-        return false;
+        return;
     }
 
     char temp[original_message.length()];
     char c;
     int i;
-    int checksum_res = 0;
+    char checksum_res = 0;
+    int sum_temp;
     bool start_end_mark = false;
     int checksum_init = original_message[0];
 
@@ -189,40 +191,49 @@ bool NetworkService::validationMessage(std::string const &original_message, std:
     for(i = 0; i < original_message.length()-2; i++)
     {
         if ((c = original_message[i+2]) == ETX) { start_end_mark = true; break; }
-        checksum_res = (c + checksum_res) % CHECKSUM;
+        sum_temp = checksum_res + c;
+        checksum_res = sum_temp % CHECKSUM;
         temp[i] = c;
     }
 
     if (checksum_init != checksum_res)
     {
         logger->debug("The message does not valid by checksum.");
-        return false;
+        return;
     }
 
     if (!start_end_mark)
     {
         logger->debug("The message does not have ETX mark.");
-        return false;
+        return;
     }
 
-    valided_message = std::string(temp, i);
+    std::string validated_message = std::string(temp, i);
 
     bool contains_status = false;
     int statuses_count = EnumUtils::network_state_str.size();
+    std::string state_string = StringUtils::split(validated_message, " ")[0];
 
     /* Kontrola, zda zprava obsahuje validni prikaz */
     for(int i=0;i<statuses_count;i++)
     {
         std::string status = EnumUtils::network_state_str[i];
-        if (valided_message.find(status) != std::string::npos) { contains_status = true; break; }
+        if (state_string.compare(status) == 0) { contains_status = true; break; }
     }
 
     if (!contains_status)
     {
         logger->debug("The message does not have STATE.");
-        return false;
+        return;
     }
 
+    validated_messages.push_back(validated_message);
     logger->debug("The message is successful validated.");
-    return true;
+
+    int start = validated_message.size() + 1 + 1 + 1;
+    int end = original_message.size() - start;
+    std::string next_message = original_message.substr(start, end);
+
+    if (next_message.compare("")) { return; }
+    else { validationMessage(next_message, validated_messages); }
 }
