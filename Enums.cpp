@@ -6,7 +6,9 @@
 
 std::vector<std::string> EnumUtils::network_state_str = {"LOGIN", "ALL_USERS", "GAME_JOIN", "GAME_TAKE", "LOGOUT", "HARD_LOGOUT",
                                                          "GAME_END", "GAME_SWITCH_USER", "GAME_TURN", "GAME", "PONG",
-                                                         "GAME_CHALLENGER", "GAME_INVITE", "GAME_SETTINGS"};
+                                                         "GAME_CHALLENGER", "GAME_INVITE", "GAME_SETTINGS", "GAME_DISCONNECT",
+                                                         "GAME_BACK", "GAME_CONTINUE", "GAME_FINISH", "GAME_STATE"};
+
 std::vector<std::string> EnumUtils::user_state_str = {"LOGGED", "DISCONNECTED", "PLAYED", "WAIT_FOR_GAME"};
 
 std::map<std::string, enums::network_state > EnumUtils::string_to_network_state = {
@@ -24,7 +26,11 @@ std::map<std::string, enums::network_state > EnumUtils::string_to_network_state 
         {EnumUtils::network_state_str[enums::GAME_CHALLENGER],  enums::GAME_CHALLENGER},
         {EnumUtils::network_state_str[enums::GAME_INVITE],      enums::GAME_INVITE},
         {EnumUtils::network_state_str[enums::GAME_SETTINGS],    enums::GAME_SETTINGS},
-
+        {EnumUtils::network_state_str[enums::GAME_DISCONNECT],  enums::GAME_DISCONNECT},
+        {EnumUtils::network_state_str[enums::GAME_BACK],        enums::GAME_BACK},
+        {EnumUtils::network_state_str[enums::GAME_CONTINUE],    enums::GAME_CONTINUE},
+        {EnumUtils::network_state_str[enums::GAME_FINISH],      enums::GAME_FINISH},
+        {EnumUtils::network_state_str[enums::GAME_STATE],       enums::GAME_STATE},
 };
 
 std::map<std::string, enums::user_state > EnumUtils::string_to_user_state = {

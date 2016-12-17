@@ -18,10 +18,13 @@ public:
     GameManager(SafeList<User> *users, SafeList<Game> *games,SafeQueue<RCVMessage> *receive_queue,  SafeQueue<SNDMessage> *send_queue, int const matches_layers, int const matches_taking)
             : Manager(users, games, receive_queue, send_queue, matches_layers, matches_taking) {}
 
-    void join(int const socket, std::vector<std::string> parameters);
     void invite(int const socket, std::vector<std::string> parameters);
     void challenger(int const socket, std::vector<std::string> parameters);
-
+    void take(int const socket, std::vector<std::string> parameters);
+    void switch_user(int const socket, std::vector<std::string> parameters);
+    void back(int const socket, std::vector<std::string> parameters);
+    void end(int const socket, std::vector<std::string> parameters);
+    void state(int const socket, std::vector<std::string> parameters);
 };
 
 

@@ -7,7 +7,7 @@
 
 #define STX         02
 #define ETX         03
-#define CHECKSUM    138
+#define CHECKSUM    64
 
 
 #include "Logger.h"

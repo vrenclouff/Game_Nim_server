@@ -31,9 +31,13 @@ void RouterService::startRouterLoop()
             case enums::ALL_USERS:          { user_manager->all_users(message.socket, message.parameters);    }   break;
             case enums::LOGIN:              { user_manager->login(message.socket, message.parameters);        }   break;
             case enums::LOGOUT:             { user_manager->logout(message.socket, message.parameters);       }   break;
-            case enums::GAME_JOIN:          { game_manager->join(message.socket, message.parameters);         }   break;
             case enums::GAME_CHALLENGER:    { game_manager->challenger(message.socket, message.parameters);   }   break;
             case enums::GAME_INVITE:        { game_manager->invite(message.socket, message.parameters);       }   break;
+            case enums::GAME_TAKE:          { game_manager->take(message.socket, message.parameters);         }   break;
+            case enums::GAME_SWITCH_USER:   { game_manager->switch_user(message.socket, message.parameters);  }   break;
+            case enums::GAME_BACK:          { game_manager->back(message.socket, message.parameters);         }   break;
+            case enums::GAME_END:           { game_manager->end(message.socket, message.parameters);          }   break;
+            case enums::GAME_STATE:         { game_manager->state(message.socket, message.parameters);        }   break;
             default:
             {
                 send_queue->push(SNDMessage(message.socket, message.state, "success"));

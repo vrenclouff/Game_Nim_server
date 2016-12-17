@@ -18,11 +18,13 @@ public:
         this->socket = socket;
         this->loginname = loginname;
         this->state = enums::LOGGED;
+        this->game = -1;
     }
 
     int socket;
     std::string loginname;
     enums::user_state state;
+    int game;
 };
 
 

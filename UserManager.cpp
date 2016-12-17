@@ -15,18 +15,51 @@ void UserManager::hard_logout(int const socket, std::vector<std::string> paramet
     {
         logger->info(StringUtils::format(3, "User with ID: ", std::to_string(user.socket).c_str(), " was disconnected."));
 
-        if (user.state == enums::PLAYED)
+        if (user.state == enums::PLAYED || user.state == enums::WAIT_FOR_GAME)
         {
-            logger->info(StringUtils::format(3, "User ", user.loginname.c_str(), " was set state DISCONNECTED."));
-            user.state = enums::DISCONNECTED;
+            Game &game = findGameByID(user.game);
 
-            // TODO vyhledat hru a poslat protihracum se hrac se odpojil
+            if (NULL != (&game))
+            {
+                if (game.player_first == -1 || game.player_second == -1)
+                {
+                    logger->info(StringUtils::format(3, "Game ", std::to_string(game.id).c_str(), " does have players and will be deleted."));
+                    int game_index = findGameIndex(game);
+                    games->remove(game_index);
+
+                    int user_index = findUserIndex(user);
+                    users->remove(user_index);
+                }else
+                {
+                    logger->info(StringUtils::format(3, "User ", user.loginname.c_str(), " was set state DISCONNECTED."));
+                    user.state = enums::DISCONNECTED;
+
+                    int adversary_socket;
+                    if (game.player_first == socket)
+                    {
+                        adversary_socket = game.player_second;
+                        game.player_first = -1;
+                    } else if (game.player_second == socket)
+                    {
+                        adversary_socket = game.player_first;
+                        game.player_second = -1;
+                    }
+
+                    send_queue->push(SNDMessage(adversary_socket, enums::GAME_DISCONNECT, ""));
+
+                    User &adversary_user = findUserBySocket(adversary_socket);
+                    adversary_user.state = enums::WAIT_FOR_GAME;
+                }
+            } else
+            {
+                int user_index = findUserIndex(user);
+                users->remove(user_index);
+            }
         }else if (user.state == enums::LOGGED)
         {
             int user_index = findUserIndex(user);
             users->remove(user_index);
             logger->info(StringUtils::format(3, "User ", user.loginname.c_str(), " was removed."));
-
             broadcast({socket}, enums::LOGGED, enums::ALL_USERS);
         }
     }
@@ -95,8 +128,22 @@ void UserManager::login(int const socket, std::vector<std::string> parameters)
     } else if (user.state == enums::DISCONNECTED)
     {
         user.socket = socket;
-        // TODO vyzva na zpet do hry
-        send_queue->push(SNDMessage(socket, enums::LOGIN, "back to game"));
+
+        Game &game = findGameByID(user.game);
+
+        if (NULL != (&game))
+        {
+            send_queue->push(SNDMessage(socket, enums::LOGIN, StringUtils::format(2, SUCCESS, " GAME")));
+        }else
+        {
+            send_queue->push(SNDMessage(socket, enums::LOGIN, SUCCESS));
+
+            user.socket = enums::LOGGED;
+            broadcast({socket}, enums::LOGGED, enums::ALL_USERS);
+        }
+
+        send_queue->push(SNDMessage(socket, enums::GAME_SETTINGS,
+                                    StringUtils::format(5, "{\"layers\":",std::to_string(matches_layers).c_str(),",\"taking\":",std::to_string(matches_taking).c_str(),"}")));
 
     }else
     {
@@ -125,7 +172,13 @@ void UserManager::logout(int const socket, std::vector<std::string> parameters)
         broadcast({socket}, enums::LOGGED, enums::ALL_USERS);
     }else if (state == enums::PLAYED)
     {
-        // TODO najdi jeho hry a dej hracum zpravu o ukonceni hry
+        Game &game = findGameByID(user.game);
+
+        if (NULL != (&game))
+        {
+            int adversary_socket = game.player_first == socket ? game.player_second : game.player_first;
+            receive_queue->push(RCVMessage(adversary_socket, EnumUtils::network_state_str[enums::GAME_END]));
+        }
     }
 }
 

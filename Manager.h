@@ -16,7 +16,6 @@
 #define ERROR   "ERROR"
 
 class Manager {
-
 protected:
     SafeList<User> *users;
     SafeList<Game> *games;
@@ -26,6 +25,7 @@ protected:
 
     int matches_layers;
     int matches_taking;
+    int game_reference_number;
 
 public:
     Manager(SafeList<User> *users, SafeList<Game> *games,SafeQueue<RCVMessage> *receive_queue,  SafeQueue<SNDMessage> *send_queue, int const matches_layers, int const matches_taking)
@@ -37,15 +37,19 @@ public:
         this->matches_layers = matches_layers;
         this->matches_taking = matches_taking;
         this->logger = Logger::instance();
+        this->game_reference_number = 0;
     }
 
     User &findUserByLoginname(std::string const &loginname);
     User &findUserBySocket(int const socket);
     int  findUserIndex(User &user);
 
+    Game &findGameBySocket(int const socket);
+    Game &findGameByID(int const id);
+    int  findGameIndex(Game &game);
+
     void broadcast(std::vector<int> sockets, enums::user_state user_state, enums::network_state network_state);
 
 };
-
 
 #endif //NIMSERVER_MANAGER_H

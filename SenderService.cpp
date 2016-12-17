@@ -21,18 +21,18 @@ void SenderService::run()
 std::string SenderService::createValidMessage(std::string const &msg)
 {
     char buf[msg.length()+3];
-    int i, checksum = 0;
+    int i;
+    long check_sum = 0;
     char c;
 
-    buf[1] = STX;
     for(i=2; i < msg.length()+2; i++)
     {
         c = msg[i-2];
         buf[i] = c;
-        checksum = (checksum + c) % CHECKSUM;
+        check_sum += c;
     }
-    logger->debug(StringUtils::format(2, "Checksum for sender message: ", std::to_string(checksum).c_str()));
-    buf[0] = checksum;
+    buf[0] = check_sum % CHECKSUM;
+    buf[1] = STX;
     buf[i] = ETX;
     return buf;
 }

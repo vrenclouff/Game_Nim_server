@@ -182,21 +182,19 @@ void NetworkService::validationMessage(std::string const &original_message, std:
     char temp[original_message.length()];
     char c;
     int i;
-    char checksum_res = 0;
-    int sum_temp;
+    long sum_temp = 0;
     bool start_end_mark = false;
-    int checksum_init = original_message[0];
+    char checksum_init = original_message[0];
 
     /* Kontrola konecne znacky zpravy a checksumy */
     for(i = 0; i < original_message.length()-2; i++)
     {
         if ((c = original_message[i+2]) == ETX) { start_end_mark = true; break; }
-        sum_temp = checksum_res + c;
-        checksum_res = sum_temp % CHECKSUM;
+        sum_temp += c;
         temp[i] = c;
     }
 
-    if (checksum_init != checksum_res)
+    if (checksum_init != (sum_temp % CHECKSUM))
     {
         logger->debug("The message does not valid by checksum.");
         return;
@@ -218,7 +216,7 @@ void NetworkService::validationMessage(std::string const &original_message, std:
     for(int i=0;i<statuses_count;i++)
     {
         std::string status = EnumUtils::network_state_str[i];
-        if (state_string.compare(status) == 0) { contains_status = true; break; }
+        if (state_string.compare(status)) { contains_status = true; break; }
     }
 
     if (!contains_status)
@@ -234,6 +232,6 @@ void NetworkService::validationMessage(std::string const &original_message, std:
     int end = original_message.size() - start;
     std::string next_message = original_message.substr(start, end);
 
-    if (next_message.compare("")) { return; }
+    if (next_message.compare("") == 0) { return; }
     else { validationMessage(next_message, validated_messages); }
 }
