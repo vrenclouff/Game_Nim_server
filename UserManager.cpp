@@ -125,7 +125,7 @@ void UserManager::login(int const socket, std::vector<std::string> parameters)
 
         broadcast({socket}, enums::LOGGED, enums::ALL_USERS);
 
-    } else if (user.state == enums::DISCONNECTED)
+    } else if (user.state == enums::DISCONNECTED || user.state == enums::WAIT_FOR_GAME)
     {
         user.socket = socket;
 
@@ -138,7 +138,7 @@ void UserManager::login(int const socket, std::vector<std::string> parameters)
         {
             send_queue->push(SNDMessage(socket, enums::LOGIN, SUCCESS));
 
-            user.socket = enums::LOGGED;
+            user.state = enums::LOGGED;
             broadcast({socket}, enums::LOGGED, enums::ALL_USERS);
         }
 

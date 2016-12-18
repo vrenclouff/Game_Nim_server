@@ -15,21 +15,22 @@ Application *Application::instance()
 
 void Application::start(Parameters *param)
 {
+    if (param->help()) { param->printHelp(); exit(0); }
 
     Logger::registerLogger(param->logLevel(), param->logToConsole(), param->logToFile());
     logger->info("Start application.");
 
     logger->debug("Creating space for receive messages.");
-    SafeQueue<RCVMessage> *receive_queue = new SafeQueue<RCVMessage>();
+    receive_queue = new SafeQueue<RCVMessage>();
 
     logger->debug("Creating space for messages for send.");
-    SafeQueue<SNDMessage> *send_queue = new SafeQueue<SNDMessage>();
+    send_queue = new SafeQueue<SNDMessage>();
 
     logger->debug("Creating space for users");
-    SafeList<User> *users = new SafeList<User>();
+    users = new SafeList<User>();
 
     logger->debug("Creating space for games");
-    SafeList<Game> *games = new SafeList<Game>();
+    games = new SafeList<Game>();
 
     logger->debug("Creating network thread.");
     std::thread network_service(&Thread::run, NetworkService(receive_queue, param->port()));
@@ -43,4 +44,22 @@ void Application::start(Parameters *param)
     network_service.join();
     router_service.join();
     sender_service.join();
+}
+
+Application::~Application()
+{
+    logger->info("Deleting space for receive messages.");
+    delete receive_queue;
+
+    logger->info("Deleting space for messages for send.");
+    delete send_queue;
+
+    logger->info("Deleting space for users.");
+    delete users;
+
+    logger->info("Deleting space for games.");
+    delete games;
+
+    logger->info("Application closed.");
+    delete logger;
 }

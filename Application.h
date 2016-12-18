@@ -13,7 +13,12 @@
 class Application {
 private:
     Logger *logger;
+    SafeQueue<RCVMessage> *receive_queue;
+    SafeQueue<SNDMessage> *send_queue;
+    SafeList<User> *users;
+    SafeList<Game> *games;
 public:
+    ~Application();
     static Application *instance();
     void start(Parameters *param);
 };

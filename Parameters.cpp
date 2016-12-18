@@ -2,6 +2,7 @@
 // Created by vrenclouff on 20/10/16.
 //
 
+#include <iostream>
 #include "Parameters.h"
 
 void Parameters::parse(int argc, char **argv)
@@ -25,4 +26,60 @@ void Parameters::parse(int argc, char **argv)
 
     MainOptions::Option* matchesTaking = mo.getParamFromKey("-t");
     _matches_taking = matchesTaking ? atoi((*matchesTaking).second.c_str()) : DEFAULT_MATCHES_TAKING;
+
+    MainOptions::Option* help = mo.getParamFromKey("-h");
+    _help = help ? true : false;
+
+
+    if (_log_level < MIN_LOG_LEVEL || _log_level > MAX_LOG_LEVEL)
+    {
+        std::cout << "Log level " << _log_level << " is not in range <0,3>"  << std::endl; exit(1);
+    }
+
+    if (_matches_layers < MIN_MATCHES_LAYERS || _matches_layers > MAX_MATCHES_LAYERS)
+    {
+        std::cout << "Number of layers " << _matches_layers << " is not in range <2,6>" << std::endl; exit(1);
+    }
+}
+
+void Parameters::printHelp()
+{
+    std::cout  << "NAME" << std::endl;
+    std::cout  << "\tnimServer - server nim game" << std::endl;
+    std::cout  << "OPTIONS" << std::endl;
+    std::cout  << "\t-p" << std::endl;
+    std::cout  << "\t\tport for access to server" << std::endl;
+    std::cout  << "\t\t\tdefault - 9999" << std::endl;
+
+    std::cout  << "\t-c" << std::endl;
+    std::cout  << "\t\tenable log to console" << std::endl;
+    std::cout  << "\t\t\tdefault - true" << std::endl;
+
+    std::cout  << "\t-f" << std::endl;
+    std::cout  << "\t\tenable log to file" << std::endl;
+    std::cout  << "\t\t\tdefault - false" << std::endl;
+
+    std::cout  << "\t-l" << std::endl;
+    std::cout  << "\t\tdefine log level" << std::endl;
+    std::cout  << "\t\t\tdefault - 1" << std::endl;
+    std::cout  << "\t\t\t 0 - DEBUG" << std::endl;
+    std::cout  << "\t\t\t 1 - INFO" << std::endl;
+    std::cout  << "\t\t\t 2 - WARNING" << std::endl;
+    std::cout  << "\t\t\t 3 - ERROR" << std::endl;
+
+    std::cout  << "\t-m" << std::endl;
+    std::cout  << "\t\tnumber of layers, which will be show in game" << std::endl;
+    std::cout  << "\t\t\tdefault - 4" << std::endl;
+    std::cout  << "\t\t\t 2 - 4 matches" << std::endl;
+    std::cout  << "\t\t\t 3 - 9 matches" << std::endl;
+    std::cout  << "\t\t\t 4 - 16 matches" << std::endl;
+    std::cout  << "\t\t\t 5 - 25 matches" << std::endl;
+    std::cout  << "\t\t\t 6 - 36 matches" << std::endl;
+
+    std::cout  << "\t-t" << std::endl;
+    std::cout  << "\t\tnumber of takes matches" << std::endl;
+    std::cout  << "\t\t\tdefault - 3" << std::endl;
+
+    std::cout  << "\t-h" << std::endl;
+    std::cout  << "\t\tshow help" << std::endl;
 }

@@ -91,8 +91,8 @@ void GameManager::take(int const socket, std::vector<std::string> parameters)
                     if (game.matches() == 0)
                     {
                         logger->info(StringUtils::format(4, "User with ID: ", std::to_string(user.socket).c_str(), " loses in game ", std::to_string(game.id).c_str()));
-                        send_queue->push(SNDMessage(game.onTheTurn(),    enums::GAME_FINISH, "LOST"));
-                        send_queue->push(SNDMessage(game.onNotTheTurn(), enums::GAME_FINISH, "WON"));
+                        send_queue->push(SNDMessage(game.onTheTurn(),    enums::GAME_FINISH, "LOSE"));
+                        send_queue->push(SNDMessage(game.onNotTheTurn(), enums::GAME_FINISH, "WIN"));
 
                         User &adversary_user = findUserBySocket(game.onNotTheTurn());
 
@@ -106,6 +106,9 @@ void GameManager::take(int const socket, std::vector<std::string> parameters)
 
                         int game_index = findGameIndex(game);
                         games->remove(game_index);
+
+                        broadcast({user.socket, adversary_user.socket}, enums::LOGGED, enums::ALL_USERS);
+
                     }
 
                 }else
@@ -188,7 +191,7 @@ void GameManager::back(int const socket, std::vector<std::string> parameters)
 
                     if (adversary_socket == game.onTheTurn())
                     {
-                        send_queue->push(SNDMessage(adversary_socket, enums::GAME_CONTINUE, "START START"));
+                        send_queue->push(SNDMessage(adversary_socket, enums::GAME_CONTINUE, ("START START")));
                     }else
                     {
                         send_queue->push(SNDMessage(adversary_socket, enums::GAME_CONTINUE, "START STOP"));
@@ -244,6 +247,8 @@ void GameManager::end(int const socket, std::vector<std::string> parameters)
             logger->info(StringUtils::format(3, "Game ", std::to_string(game.id).c_str(), " was deleted."));
             int game_index = findGameIndex(game);
             games->remove(game_index);
+
+            broadcast({socket}, enums::LOGGED, enums::ALL_USERS);
         }
         else
         {
@@ -269,10 +274,10 @@ void GameManager::state(int const socket, std::vector<std::string> parameters)
 
             if (user.socket == game.onTheTurn())
             {
-                send_queue->push(SNDMessage(user.socket, enums::GAME_STATE, ("START " + state)));
+                send_queue->push(SNDMessage(user.socket, enums::GAME_STATE, ("START " + state + " " + std::to_string(game.take_counter))));
             }else
             {
-                send_queue->push(SNDMessage(user.socket, enums::GAME_STATE, ("STOP " + state)));
+                send_queue->push(SNDMessage(user.socket, enums::GAME_STATE, ("STOP " + state + " 0")));
             }
         }
     }
