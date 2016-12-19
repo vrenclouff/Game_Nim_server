@@ -78,6 +78,7 @@ void UserManager::all_users(int const socket, std::vector<std::string> parameter
         return;
     }
 
+    user.state = enums::LOGGED;
     std::stringstream ss;
     int free_users = 0;
 
@@ -120,9 +121,7 @@ void UserManager::login(int const socket, std::vector<std::string> parameters)
         users->add(User(socket, loginname));
         logger->info(StringUtils::format(4, "New user with name ", loginname.c_str(), " and ID ", std::to_string(socket).c_str()));
         send_queue->push(SNDMessage(socket, enums::LOGIN, SUCCESS));
-        send_queue->push(SNDMessage(socket, enums::GAME_SETTINGS,
-                                    StringUtils::format(5, "{\"layers\":",std::to_string(matches_layers).c_str(),",\"taking\":",std::to_string(matches_taking).c_str(),"}")));
-
+        receive_queue->push(RCVMessage(socket, EnumUtils::network_state_str[enums::GAME_SETTINGS]));
         broadcast({socket}, enums::LOGGED, enums::ALL_USERS);
 
     } else if (user.state == enums::DISCONNECTED || user.state == enums::WAIT_FOR_GAME)
@@ -142,8 +141,7 @@ void UserManager::login(int const socket, std::vector<std::string> parameters)
             broadcast({socket}, enums::LOGGED, enums::ALL_USERS);
         }
 
-        send_queue->push(SNDMessage(socket, enums::GAME_SETTINGS,
-                                    StringUtils::format(5, "{\"layers\":",std::to_string(matches_layers).c_str(),",\"taking\":",std::to_string(matches_taking).c_str(),"}")));
+        receive_queue->push(RCVMessage(socket, EnumUtils::network_state_str[enums::GAME_SETTINGS]));
 
     }else
     {

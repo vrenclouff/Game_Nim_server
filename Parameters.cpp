@@ -66,7 +66,7 @@ void Parameters::printHelp()
     std::cout  << "\t\t\t 1 - INFO" << std::endl;
     std::cout  << "\t\t\t 2 - WARNING" << std::endl;
     std::cout  << "\t\t\t 3 - ERROR" << std::endl;
-
+/*
     std::cout  << "\t-m" << std::endl;
     std::cout  << "\t\tnumber of layers, which will be show in game" << std::endl;
     std::cout  << "\t\t\tdefault - 4" << std::endl;
@@ -79,7 +79,7 @@ void Parameters::printHelp()
     std::cout  << "\t-t" << std::endl;
     std::cout  << "\t\tcounter per turn for user" << std::endl;
     std::cout  << "\t\t\tdefault - 3" << std::endl;
-
+*/
     std::cout  << "\t-h" << std::endl;
     std::cout  << "\t\tshow help" << std::endl;
 }

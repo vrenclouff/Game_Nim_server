@@ -282,3 +282,18 @@ void GameManager::state(int const socket, std::vector<std::string> parameters)
         }
     }
 }
+
+void GameManager::settings(int const socket, std::vector<std::string> parameters)
+{
+    User &user = findUserBySocket(socket);
+
+    if (NULL != (&user))
+    {
+        send_queue->push(SNDMessage(socket, enums::GAME_SETTINGS,
+                                    StringUtils::format(5, "{\"layers\":",std::to_string(matches_layers).c_str(),
+                                                        ",\"taking\":",std::to_string(matches_taking).c_str(),"}")));
+    }else
+    {
+        send_queue->push(SNDMessage(socket, enums::GAME_SETTINGS, ERROR));
+    }
+}

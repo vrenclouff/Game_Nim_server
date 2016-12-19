@@ -25,6 +25,7 @@ public:
     void back(int const socket, std::vector<std::string> parameters);
     void end(int const socket, std::vector<std::string> parameters);
     void state(int const socket, std::vector<std::string> parameters);
+    void settings(int const socket, std::vector<std::string> parameters);
 };
 
 

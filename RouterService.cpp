@@ -38,10 +38,7 @@ void RouterService::startRouterLoop()
             case enums::GAME_BACK:          { game_manager->back(message.socket, message.parameters);         }   break;
             case enums::GAME_END:           { game_manager->end(message.socket, message.parameters);          }   break;
             case enums::GAME_STATE:         { game_manager->state(message.socket, message.parameters);        }   break;
-            default:
-            {
-                send_queue->push(SNDMessage(message.socket, message.state, "success"));
-            }
+            case enums::GAME_SETTINGS:      { game_manager->settings(message.socket, message.parameters);     }   break;
         }
     }
 }

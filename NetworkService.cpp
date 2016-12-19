@@ -75,6 +75,14 @@ void NetworkService::initSocket(int port)
         exit(EXIT_FAILURE);
     }
 
+    logger->debug("Settings setsockopt() for reuse port.");
+    if(setsockopt(server_socket, SOL_SOCKET, SO_REUSEADDR, &optval, optlen) < 0)
+    {
+        logger->error("Set socket FD's option SO_REUSEADDR at protocol level SOL_SOCKET");
+        close(server_socket);
+        exit(EXIT_FAILURE);
+    }
+
     logger->debug("Binding the host address using bind() call.");
     if (bind(server_socket, (struct sockaddr *) &my_addr, sizeof(struct sockaddr_in)) < 0)
     {
@@ -99,7 +107,8 @@ void NetworkService::initSocket(int port)
 void NetworkService::startListeningLoop()
 {
     int client_socket, fd, return_value, len_addr, a2read;
-    char cbuf[1024];
+//    char cbuf[1024];
+    char *buf;
     struct sockaddr_in peer_addr;
     fd_set temp_socks;
 
@@ -125,18 +134,20 @@ void NetworkService::startListeningLoop()
                     ioctl(fd, FIONREAD, &a2read);
                     if (a2read > 0)
                     {
-                        int ln = recv(fd, &cbuf, a2read, 0);
-                        cbuf[ln] = '\0';
+                        buf = (char *) calloc(a2read, sizeof(char));
+                        int ln = recv(fd, buf, a2read, 0);
+                        buf[ln] = '\0';
 
                         std::vector<std::string> receive_messages;
-                        validationMessage(cbuf, receive_messages);
+                        validationMessage(buf, receive_messages);
                         for(int i=0;i<receive_messages.size();i++)
                         {
                             std::string validated_message = receive_messages[i];
                             logger->info(StringUtils::format(4, "User with ID ", std::to_string(fd).c_str(), " receive message: ", validated_message.c_str()));
                             queue->push(RCVMessage(fd, validated_message));
                         }
-                        memset(cbuf, 0, sizeof cbuf);
+                     //   memset(cbuf, 0, sizeof cbuf);
+                        free(buf);
                     } else
                     {
                         close(fd); FD_CLR(fd, &socks);
