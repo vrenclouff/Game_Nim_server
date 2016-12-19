@@ -77,7 +77,7 @@ void Parameters::printHelp()
     std::cout  << "\t\t\t 6 - 36 matches" << std::endl;
 
     std::cout  << "\t-t" << std::endl;
-    std::cout  << "\t\tnumber of takes matches" << std::endl;
+    std::cout  << "\t\tcounter per turn for user" << std::endl;
     std::cout  << "\t\t\tdefault - 3" << std::endl;
 
     std::cout  << "\t-h" << std::endl;
