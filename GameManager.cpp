@@ -42,8 +42,10 @@ void GameManager::invite(int const socket, std::vector<std::string> parameters)
                 user_recipient.state = enums::PLAYED;
                 user_challenger.state = enums::PLAYED;
 
-                send_queue->push(SNDMessage(user_challenger.socket, enums::GAME_JOIN, "START"));
-                send_queue->push(SNDMessage(user_recipient.socket, enums::GAME_JOIN, "STOP"));
+                send_queue->push(SNDMessage(user_challenger.socket, enums::GAME_JOIN,
+                                            StringUtils::format(5, "START", " ", std::to_string(matches_layers).c_str(), " ", std::to_string(matches_taking).c_str()).c_str()));
+                send_queue->push(SNDMessage(user_recipient.socket, enums::GAME_JOIN,
+                                            StringUtils::format(5, "STOP", " ", std::to_string(matches_layers).c_str(), " ", std::to_string(matches_taking).c_str()).c_str()));
 
                 game_reference_number++;
                 logger->info(StringUtils::format(2, "Start game with ID: ", std::to_string(game_reference_number).c_str()));
@@ -202,6 +204,10 @@ void GameManager::back(int const socket, std::vector<std::string> parameters)
                     logger->info(StringUtils::format(7, "Player ", std::to_string(user.socket).c_str()," doesn't want come back to game ",
                                                      std::to_string(game.id).c_str()," and second player ", std::to_string(adversary_socket).c_str()," is waiting for him."));                    // TODO druha hrac ceka na pripojeni, ale on odmitl se prihlasit znovu
 
+                    user.state = enums::LOGGED;
+                    user.game = -1;
+                    broadcast({-1}, enums::LOGGED, enums::ALL_USERS);
+
                     receive_queue->push(RCVMessage(adversary_socket, EnumUtils::network_state_str[enums::GAME_END]));
                 }
             }else
@@ -231,6 +237,7 @@ void GameManager::end(int const socket, std::vector<std::string> parameters)
                 {
                     send_queue->push(SNDMessage(game_user.socket, enums::GAME_END, SUCCESS));
                     game_user.state = enums::LOGGED;
+                    game_user.game = -1;
                 }
             }
 
@@ -241,6 +248,7 @@ void GameManager::end(int const socket, std::vector<std::string> parameters)
                 {
                     send_queue->push(SNDMessage(game_user.socket, enums::GAME_END, SUCCESS));
                     game_user.state = enums::LOGGED;
+                    game_user.game = -1;
                 }
             }
 

@@ -24,8 +24,8 @@ void Parameters::parse(int argc, char **argv)
     MainOptions::Option* matchesLayers = mo.getParamFromKey("-m");
     _matches_layers = matchesLayers ? atoi((*matchesLayers).second.c_str()) : DEFAULT_MATCHES_LAYERS;
 
-    MainOptions::Option* matchesTaking = mo.getParamFromKey("-t");
-    _matches_taking = matchesTaking ? atoi((*matchesTaking).second.c_str()) : DEFAULT_MATCHES_TAKING;
+//    MainOptions::Option* matchesTaking = mo.getParamFromKey("-t");
+    _matches_taking = /* matchesTaking ? atoi((*matchesTaking).second.c_str()) : */ DEFAULT_MATCHES_TAKING;
 
     MainOptions::Option* help = mo.getParamFromKey("-h");
     _help = help ? true : false;
@@ -38,7 +38,7 @@ void Parameters::parse(int argc, char **argv)
 
     if (_matches_layers < MIN_MATCHES_LAYERS || _matches_layers > MAX_MATCHES_LAYERS)
     {
-        std::cout << "Number of layers " << _matches_layers << " is not in range <2,6>" << std::endl; exit(1);
+        std::cout << "Number of layers " << _matches_layers << " is not in range <3,6>" << std::endl; exit(1);
     }
 }
 
@@ -66,20 +66,15 @@ void Parameters::printHelp()
     std::cout  << "\t\t\t 1 - INFO" << std::endl;
     std::cout  << "\t\t\t 2 - WARNING" << std::endl;
     std::cout  << "\t\t\t 3 - ERROR" << std::endl;
-/*
+
     std::cout  << "\t-m" << std::endl;
     std::cout  << "\t\tnumber of layers, which will be show in game" << std::endl;
     std::cout  << "\t\t\tdefault - 4" << std::endl;
-    std::cout  << "\t\t\t 2 - 4 matches" << std::endl;
     std::cout  << "\t\t\t 3 - 9 matches" << std::endl;
     std::cout  << "\t\t\t 4 - 16 matches" << std::endl;
     std::cout  << "\t\t\t 5 - 25 matches" << std::endl;
     std::cout  << "\t\t\t 6 - 36 matches" << std::endl;
 
-    std::cout  << "\t-t" << std::endl;
-    std::cout  << "\t\tcounter per turn for user" << std::endl;
-    std::cout  << "\t\t\tdefault - 3" << std::endl;
-*/
     std::cout  << "\t-h" << std::endl;
     std::cout  << "\t\tshow help" << std::endl;
 }

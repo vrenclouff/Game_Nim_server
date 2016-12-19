@@ -107,8 +107,7 @@ void NetworkService::initSocket(int port)
 void NetworkService::startListeningLoop()
 {
     int client_socket, fd, return_value, len_addr, a2read;
-//    char cbuf[1024];
-    char *buf;
+    char cbuf[1024];
     struct sockaddr_in peer_addr;
     fd_set temp_socks;
 
@@ -120,7 +119,6 @@ void NetworkService::startListeningLoop()
         if (return_value < 0)  { logger->error("Select - ERR"); break; }
         if (return_value == 0) { logger->error("select() timed out.  End program."); break; }
 
-        // vynechavame stdin, stdout, stderr
         for (fd = 3; fd < FD_SETSIZE; ++fd) {
             if (FD_ISSET(fd, &temp_socks))
             {
@@ -132,26 +130,24 @@ void NetworkService::startListeningLoop()
                 } else
                 {
                     ioctl(fd, FIONREAD, &a2read);
-                    if (a2read > 0)
+                    if (a2read > 0 && a2read < sizeof(cbuf))
                     {
-                        buf = (char *) calloc(a2read, sizeof(char));
-                        int ln = recv(fd, buf, a2read, 0);
-                        buf[ln] = '\0';
+                        int ln = recv(fd, cbuf, sizeof(cbuf), 0);
+                        cbuf[ln] = '\0';
 
                         std::vector<std::string> receive_messages;
-                        validationMessage(buf, receive_messages);
+                        validationMessage(cbuf, receive_messages);
                         for(int i=0;i<receive_messages.size();i++)
                         {
                             std::string validated_message = receive_messages[i];
                             logger->info(StringUtils::format(4, "User with ID ", std::to_string(fd).c_str(), " receive message: ", validated_message.c_str()));
                             queue->push(RCVMessage(fd, validated_message));
                         }
-                     //   memset(cbuf, 0, sizeof cbuf);
-                        free(buf);
+                        memset(cbuf, 0, sizeof cbuf);
                     } else
                     {
                         close(fd); FD_CLR(fd, &socks);
-                        queue->push(RCVMessage(fd, "HARD_LOGOUT"));
+                        queue->push(RCVMessage(fd, EnumUtils::network_state_str[enums::HARD_LOGOUT]));
                     }
                 }
             }
