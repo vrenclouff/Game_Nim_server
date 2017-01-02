@@ -33,7 +33,7 @@ void GameManager::invite(int const socket, std::vector<std::string> parameters)
         std::string result = parameters[0];
         User &user_challenger = findUserByLoginname(parameters[1]);
 
-        if (NULL != (&user_challenger))
+        if (NULL != (&user_challenger) && user_challenger.state == enums::WAIT_FOR_GAME)
         {
             if (result.compare("ACCEPT") == 0)
             {
