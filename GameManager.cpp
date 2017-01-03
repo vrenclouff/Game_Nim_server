@@ -92,25 +92,7 @@ void GameManager::take(int const socket, std::vector<std::string> parameters)
 
                     if (game.matches() == 0)
                     {
-                        logger->info(StringUtils::format(4, "User with ID: ", std::to_string(user.socket).c_str(), " loses in game ", std::to_string(game.id).c_str()));
-                        send_queue->push(SNDMessage(game.onTheTurn(),    enums::GAME_FINISH, "LOSE"));
-                        send_queue->push(SNDMessage(game.onNotTheTurn(), enums::GAME_FINISH, "WIN"));
-
-                        User &adversary_user = findUserBySocket(game.onNotTheTurn());
-
-                        user.state = enums::LOGGED;
-                        user.game = -1;
-
-                        logger->info(StringUtils::format(3, "Game with ID: ", std::to_string(game.id).c_str(), " ended and will be deleted."));
-
-                        adversary_user.state = enums::LOGGED;
-                        adversary_user.game = -1;
-
-                        int game_index = findGameIndex(game);
-                        games->remove(game_index);
-
-                        broadcast({user.socket, adversary_user.socket}, enums::LOGGED, enums::ALL_USERS);
-
+                        receive_queue->push(RCVMessage(game.onNotTheTurn(), EnumUtils::to_string(enums::GAME_FINISH)));
                     }
 
                 }else
@@ -303,5 +285,47 @@ void GameManager::settings(int const socket, std::vector<std::string> parameters
     }else
     {
         send_queue->push(SNDMessage(socket, enums::GAME_SETTINGS, ERROR));
+    }
+}
+
+
+void GameManager::finish(int const socket, std::vector<std::string> parameters)
+{
+
+    User &user_win = findUserBySocket(socket);
+    Game &game = findGameBySocket(socket);
+
+    if (NULL != (&user_win) && NULL != (&game))
+    {
+        int adversary_socket;
+
+        if (game.onTheTurn() == user_win.socket)
+        {
+            adversary_socket = game.onNotTheTurn();
+        }else if (game.onNotTheTurn() == user_win.socket)
+        {
+            adversary_socket = game.onTheTurn();
+        }
+
+        User &user_lose = findUserBySocket(adversary_socket);
+
+        if (NULL != (&user_lose))
+        {
+            logger->info(StringUtils::format(4, "User with ID: ", std::to_string(user_win.socket).c_str(), " won in game ", std::to_string(game.id).c_str()));
+            send_queue->push(SNDMessage(user_lose.socket, enums::GAME_FINISH, "LOSE"));
+            send_queue->push(SNDMessage(user_win.socket,  enums::GAME_FINISH, "WIN"));
+
+            user_win.state = enums::LOGGED;
+            user_win.game = -1;
+
+            user_lose.state = enums::LOGGED;
+            user_lose.game = -1;
+
+
+            int game_index = findGameIndex(game);
+            games->remove(game_index);
+
+            broadcast({user_win.socket, user_lose.socket}, enums::LOGGED, enums::ALL_USERS);
+        }
     }
 }

@@ -15,7 +15,7 @@ private:
     Logger *logger = Logger::instance();
     std::vector<T> array;
 
-    mutable std::mutex m;
+    pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 
 public:
     void add(T const &);
@@ -35,18 +35,20 @@ template <class T>
 void SafeList<T>::add (T const & elem)
 {
     logger->debug("SafeList<>::add lock");
-    std::lock_guard<std::mutex> lock(m);
+    pthread_mutex_lock(&mutex);
     logger->debug("SafeList<>::add element");
     array.push_back(elem);
+    pthread_mutex_unlock(&mutex);
 }
 
 template <class T>
 void SafeList<T>::remove(int const index)
 {
     logger->debug("SafeList<>::delete lock");
-    std::lock_guard<std::mutex> lock(m);
+    pthread_mutex_lock(&mutex);
     logger->debug("SafeList<>::delete element");
     array.erase(array.begin()+index);
+    pthread_mutex_unlock(&mutex);
 }
 
 #endif //NIMSERVER_SAFETYLIST_H

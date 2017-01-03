@@ -38,6 +38,7 @@ void RouterService::startRouterLoop()
             case enums::GAME_END:           { game_manager->end(message.socket, message.parameters);          }   break;
             case enums::GAME_STATE:         { game_manager->state(message.socket, message.parameters);        }   break;
             case enums::GAME_SETTINGS:      { game_manager->settings(message.socket, message.parameters);     }   break;
+            case enums::GAME_FINISH:        { game_manager->finish(message.socket, message.parameters);       }   break;
         }
     }
 }

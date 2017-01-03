@@ -13,7 +13,10 @@ void SenderService::run()
         logger->debug("Waiting for send message.");
         SNDMessage message = send_queue->pop();
         std::string msg = createValidMessage(StringUtils::format(3, EnumUtils::to_string(message.state).c_str(), " ", message.parameters.c_str()));
-        logger->debug(StringUtils::format(4, "Sending to user: ", std::to_string(message.socket).c_str() ," message: ", msg.c_str()));
+        if (message.state != enums::PONG)
+        {
+            logger->info(StringUtils::format(4, "Sending to user: ", std::to_string(message.socket).c_str() ," message: ", msg.c_str()));
+        }
         send(message.socket, msg.c_str(), msg.length(), 0);
     }
 }
