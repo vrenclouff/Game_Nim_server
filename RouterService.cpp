@@ -26,7 +26,6 @@ void RouterService::startRouterLoop()
 
         switch (message.state)
         {
-            case enums::PONG:               { send_queue->push(SNDMessage(message.socket, message.state, ""));}   break;
             case enums::HARD_LOGOUT:        { user_manager->hard_logout(message.socket, message.parameters);  }   break;
             case enums::ALL_USERS:          { user_manager->all_users(message.socket, message.parameters);    }   break;
             case enums::LOGIN:              { user_manager->login(message.socket, message.parameters);        }   break;

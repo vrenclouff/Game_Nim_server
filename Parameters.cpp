@@ -30,6 +30,10 @@ void Parameters::parse(int argc, char **argv)
     MainOptions::Option* help = mo.getParamFromKey("-h");
     _help = help ? true : false;
 
+    if (_port == 0)
+    {
+        std::cout << "Invalid port number" << std::endl; exit(1);
+    }
 
     if (_log_level < MIN_LOG_LEVEL || _log_level > MAX_LOG_LEVEL)
     {

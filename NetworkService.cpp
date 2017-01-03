@@ -140,14 +140,19 @@ void NetworkService::startListeningLoop()
                         for(int i=0;i<receive_messages.size();i++)
                         {
                             std::string validated_message = receive_messages[i];
-                            logger->info(StringUtils::format(4, "User with ID ", std::to_string(fd).c_str(), " receive message: ", validated_message.c_str()));
-                            queue->push(RCVMessage(fd, validated_message));
+                            RCVMessage msg = RCVMessage(fd, validated_message);
+                            if (msg.state == enums::PONG) {
+                                snd_queue->push(SNDMessage(fd, enums::PONG, ""));
+                            }else {
+                                logger->info(StringUtils::format(4, "User with ID ", std::to_string(fd).c_str(), " receive message: ", validated_message.c_str()));
+                                rcv_queue->push(msg);
+                            }
                         }
                         memset(cbuf, 0, sizeof cbuf);
                     } else
                     {
                         close(fd); FD_CLR(fd, &socks);
-                        queue->push(RCVMessage(fd, EnumUtils::network_state_str[enums::HARD_LOGOUT]));
+                        rcv_queue->push(RCVMessage(fd, EnumUtils::network_state_str[enums::HARD_LOGOUT]));
                     }
                 }
             }

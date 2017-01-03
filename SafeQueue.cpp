@@ -17,8 +17,10 @@ private:
     Logger *logger = Logger::instance();
     std::queue<T> queue;
 
-    mutable std::mutex m;
-    std::condition_variable c;
+//    mutable std::mutex m;
+//    std::condition_variable c;
+    pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
+    pthread_cond_t cond = PTHREAD_COND_INITIALIZER;
 
 public:
     void push(T const&);
@@ -29,26 +31,32 @@ template <class T>
 void SafeQueue<T>::push (T const& elem)
 {
     logger->debug("SafeQueue<>::push lock");
-    std::lock_guard<std::mutex> lock(m);
+ //   std::lock_guard<std::mutex> lock(m);
+    pthread_mutex_lock(&mutex);
     logger->debug("SafeQueue<>::push element");
     queue.push(elem);
     logger->debug("Broadcast condiditon call.");
-    c.notify_one();
+ //   c.notify_one();
+    pthread_cond_broadcast(&cond);
+    pthread_mutex_unlock(&mutex);
 }
 
 template <class T>
 T SafeQueue<T>::pop ()
 {
-    std::unique_lock<std::mutex> lock(m);
+ //   std::unique_lock<std::mutex> lock(m);
+    pthread_mutex_lock(&mutex);
     while(queue.empty())
     {
         logger->debug("SafeQueue<>::front wait.");
-        c.wait(lock);
+//        c.wait(lock);
+        pthread_cond_wait(&cond, &mutex);
     }
     logger->debug("SafeQueue<>::front element.");
     T val = queue.front();
     logger->debug("SafeQueue<>::pop element");
     queue.pop();
+    pthread_mutex_unlock(&mutex);
     return val;
 }
 

@@ -33,7 +33,7 @@ void Application::start(Parameters *param)
     games = new SafeList<Game>();
 
     logger->debug("Creating network thread.");
-    std::thread network_service(&Thread::run, NetworkService(receive_queue, param->port()));
+    std::thread network_service(&Thread::run, NetworkService(receive_queue, send_queue, param->port()));
 
     logger->debug("Creating router thread.");
     std::thread router_service(&Thread::run, RouterService(receive_queue, send_queue, users, games, param->matchesLayers(), param->matchesTaking()));

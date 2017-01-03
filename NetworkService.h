@@ -14,12 +14,14 @@
 #include "Thread.h"
 #include "SafeQueue.cpp"
 #include "RCVMessage.h"
+#include "SNDMessage.h"
 
 class NetworkService: public Thread {
 
 private:
     Logger *logger;
-    SafeQueue<RCVMessage> *queue;
+    SafeQueue<RCVMessage> *rcv_queue;
+    SafeQueue<SNDMessage> *snd_queue;
     int server_socket;
     fd_set socks;
     int port;
@@ -29,9 +31,10 @@ private:
     void validationMessage(std::string const &original_message, std::vector<std::string> &validated_messages);
 
 public:
-    NetworkService(SafeQueue<RCVMessage> *queue, int const port)
+    NetworkService(SafeQueue<RCVMessage> *rcv_queue, SafeQueue<SNDMessage> *snd_queue, int const port)
     {
-        this->queue = queue;
+        this->rcv_queue = rcv_queue;
+        this->snd_queue = snd_queue;
         this->port = port;
         this->logger = Logger::instance();
     }
