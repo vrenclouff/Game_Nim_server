@@ -2,3 +2,6 @@
 CMakeFiles/
 cmake-build-debug/
 cmake_install.cmake
+NimServer
+CMakeCache.txt
+Makefile
