@@ -69,111 +69,108 @@ void UserManager::all_users(int const socket, std::vector<std::string> parameter
 {
     User &user = findUserBySocket(socket);
 
-    logger->debug("Use want all players, who does not play.");
-
-    if (NULL == (&user))
+    if (NULL != (&user))
     {
-        logger->debug("User does not logged.");
-        send_queue->push(SNDMessage(socket, enums::ALL_USERS, ERROR));
-        return;
-    }
+        user.state = enums::LOGGED;
+        std::stringstream ss;
+        int free_users = 0;
 
-    user.state = enums::LOGGED;
-    std::stringstream ss;
-    int free_users = 0;
-
-    for(int i=0; i<users->size(); i++)
-    {
-        User user_temp = users->get(i);
-        if (user.socket == user_temp.socket) continue;
-        if (user_temp.state == enums::LOGGED)
-        {
-            if(free_users != 0) { ss << ","; }
-            ss << (std::string("\"") + user_temp.loginname + std::string("\""));
-            free_users++;
+        for (int i = 0; i < users->size(); i++) {
+            User user_temp = users->get(i);
+            if (user.socket == user_temp.socket) continue;
+            if (user_temp.state == enums::LOGGED) {
+                if (free_users != 0) { ss << ","; }
+                ss << (std::string("\"") + user_temp.loginname + std::string("\""));
+                free_users++;
+            }
         }
+        std::string params = StringUtils::format(5, "{\"count\":", std::to_string(free_users).c_str(), ",\"users\":[",  ss.str().c_str(), "]}");
+        send_queue->push(SNDMessage(user.socket, enums::ALL_USERS, params));
+    }else
+    {
+        send_queue->push(SNDMessage(socket, enums::ALL_USERS, ERROR + SPACE + std::string("USER_NOT_LOGGED")));
     }
-    std::string params = StringUtils::format(5, "{\"count\":", std::to_string(free_users).c_str() ,",\"users\":[", ss.str().c_str(), "]}");
-    send_queue->push(SNDMessage(user.socket, enums::ALL_USERS, params));
 }
 
 void UserManager::login(int const socket, std::vector<std::string> parameters)
 {
-    if (parameters.size() != 1)
+    if (parameters.size() != 0)
     {
-        send_queue->push(SNDMessage(socket, enums::LOGIN, ERROR));
-        return;
-    }
+        std::string username = parameters[0];
 
-    std::string loginname = parameters[0];
-
-    if (loginname.length() == 0)
-    {
-        logger->info(StringUtils::format(3, "Username for ID ", std::to_string(socket).c_str(), " cannot be empty."));
-        send_queue->push(SNDMessage(socket, enums::LOGIN, ERROR));
-        return;
-    }
-
-    User &user = findUserByLoginname(loginname);
-
-    if (NULL == (&user))
-    {
-        users->add(User(socket, loginname));
-        logger->info(StringUtils::format(4, "New user with name ", loginname.c_str(), " and ID ", std::to_string(socket).c_str()));
-        send_queue->push(SNDMessage(socket, enums::LOGIN, SUCCESS));
-        broadcast({socket}, enums::LOGGED, enums::ALL_USERS);
-
-    } else if (user.state == enums::DISCONNECTED || user.state == enums::WAIT_FOR_GAME)
-    {
-        user.socket = socket;
-
-        Game &game = findGameByID(user.game);
-
-        if (NULL != (&game))
+        if (username.length() != 0)
         {
-            send_queue->push(SNDMessage(socket, enums::LOGIN, StringUtils::format(2, SUCCESS, " GAME")));
+            User &user = findUserByLoginname(username);
+
+            if (NULL == (&user))
+            {
+                users->add(User(socket, username));
+                logger->info(StringUtils::format(4, "New user with name ", username.c_str(), " and ID ", std::to_string(socket).c_str()));
+                send_queue->push(SNDMessage(socket, enums::LOGIN, SUCCESS));
+                broadcast({socket}, enums::LOGGED, enums::ALL_USERS);
+
+            } else if (user.state == enums::DISCONNECTED || user.state == enums::WAIT_FOR_GAME)
+            {
+                user.socket = socket;
+
+                Game &game = findGameByID(user.game);
+
+                if (NULL != (&game))
+                {
+                    send_queue->push(SNDMessage(socket, enums::LOGIN, StringUtils::format(2, SUCCESS, " GAME")));
+
+                } else
+                {
+                    send_queue->push(SNDMessage(socket, enums::LOGIN, SUCCESS));
+                    user.state = enums::LOGGED;
+                    broadcast({socket}, enums::LOGGED, enums::ALL_USERS);
+                }
+            } else
+            {
+                logger->info(StringUtils::format(3, "User with username ", username.c_str(), " already exist."));
+                send_queue->push(SNDMessage(socket, enums::LOGIN, ERROR + SPACE + std::string("USER_EXIST")));
+            }
         }else
         {
-            send_queue->push(SNDMessage(socket, enums::LOGIN, SUCCESS));
-
-            user.state = enums::LOGGED;
-            broadcast({socket}, enums::LOGGED, enums::ALL_USERS);
+            send_queue->push(SNDMessage(socket, enums::LOGIN, ERROR + SPACE + std::string("USERNAME_IS_EMPTY")));
         }
-
     }else
     {
-        logger->info(StringUtils::format(3, "User with loginname ", loginname.c_str(), " already exist."));
-        send_queue->push(SNDMessage(socket, enums::LOGIN, ERROR));
+        send_queue->push(SNDMessage(socket, enums::LOGIN, ERROR + SPACE + std::string("USERNAME_MISSING")));
     }
 }
 
 void UserManager::logout(int const socket, std::vector<std::string> parameters)
 {
     User &user = findUserBySocket(socket);
-    if (NULL == (&user))
+
+    if (NULL != (&user))
     {
-        send_queue->push(SNDMessage(socket, enums::LOGOUT, ERROR)); return;
-    }
+        enums::user_state state = user.state;
 
-    enums::user_state state = user.state;
+        int user_index = findUserIndex(user);
+        users->remove(user_index);
 
-    int user_index = findUserIndex(user);
-    users->remove(user_index);
-    logger->info(StringUtils::format(3, "User with ID: ", std::to_string(user.socket).c_str(), " was disconnected."));
-    send_queue->push(SNDMessage(socket, enums::LOGOUT, SUCCESS));
+        logger->info(StringUtils::format(3, "User with ID: ", std::to_string(user.socket).c_str(), " was disconnected."));
+        send_queue->push(SNDMessage(socket, enums::LOGOUT, SUCCESS));
 
-    if (state == enums::LOGGED)
-    {
-        broadcast({socket}, enums::LOGGED, enums::ALL_USERS);
-    }else if (state == enums::PLAYED)
-    {
-        Game &game = findGameByID(user.game);
-
-        if (NULL != (&game))
+        if (state == enums::LOGGED)
         {
-            int adversary_socket = game.player_first == socket ? game.player_second : game.player_first;
-            receive_queue->push(RCVMessage(adversary_socket, EnumUtils::network_state_str[enums::GAME_END]));
+            broadcast({socket}, enums::LOGGED, enums::ALL_USERS);
+
+        } else if (state == enums::PLAYED)
+        {
+            Game &game = findGameByID(user.game);
+
+            if (NULL != (&game))
+            {
+                int adversary_socket = game.player_first == socket ? game.player_second : game.player_first;
+                receive_queue->push(RCVMessage(adversary_socket, EnumUtils::network_state_str[enums::GAME_END]));
+            }
         }
+    } else
+    {
+        send_queue->push(SNDMessage(socket, enums::LOGOUT, ERROR + SPACE + std::string("USER_NOT_EXIST")));
     }
 }
 

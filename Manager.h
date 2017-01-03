@@ -14,6 +14,7 @@
 
 #define SUCCESS "SUCCESS"
 #define ERROR   "ERROR"
+#define SPACE   std::string(" ")
 
 class Manager {
 protected:

@@ -9,7 +9,7 @@ void GameManager::challenger(int const socket, std::vector<std::string> paramete
 {
     User &user_challenger = findUserBySocket(socket);
 
-    if (NULL != (&user_challenger) && parameters.size() == 1)
+    if (NULL != (&user_challenger) && parameters.size() != 0)
     {
         User &user_recipient = findUserByLoginname(parameters[0]);
 
@@ -20,7 +20,13 @@ void GameManager::challenger(int const socket, std::vector<std::string> paramete
             user_recipient.state = enums::WAIT_FOR_GAME;
             send_queue->push(SNDMessage(user_recipient.socket, enums::GAME_INVITE, user_challenger.loginname));
             broadcast({user_challenger.socket, user_recipient.socket}, enums::LOGGED, enums::ALL_USERS);
+        }else
+        {
+            send_queue->push(SNDMessage(socket, enums::GAME_CHALLENGER, ERROR + SPACE + std::string("USER_RECIPIENT_NOT_FOUND")));
         }
+    }else
+    {
+        send_queue->push(SNDMessage(socket, enums::GAME_CHALLENGER, ERROR + SPACE + std::string("USER_NOT_LOGGED")));
     }
 }
 
@@ -42,10 +48,10 @@ void GameManager::invite(int const socket, std::vector<std::string> parameters)
                 user_recipient.state = enums::PLAYED;
                 user_challenger.state = enums::PLAYED;
 
-                send_queue->push(SNDMessage(user_challenger.socket, enums::GAME_JOIN,
-                                            StringUtils::format(5, "START", " ", std::to_string(matches_layers).c_str(), " ", std::to_string(matches_taking).c_str()).c_str()));
-                send_queue->push(SNDMessage(user_recipient.socket, enums::GAME_JOIN,
-                                            StringUtils::format(5, "STOP", " ", std::to_string(matches_layers).c_str(), " ", std::to_string(matches_taking).c_str()).c_str()));
+                send_queue->push(SNDMessage(user_challenger.socket,
+                                            enums::GAME_JOIN, std::string("START") + SPACE + std::to_string(matches_layers) + SPACE + std::to_string(matches_taking)));
+                send_queue->push(SNDMessage(user_recipient.socket,
+                                            enums::GAME_JOIN, std::string("STOP") + SPACE + std::to_string(matches_layers) + SPACE + std::to_string(matches_taking)));
 
                 game_reference_number++;
                 logger->info(StringUtils::format(2, "Start game with ID: ", std::to_string(game_reference_number).c_str()));
@@ -63,7 +69,13 @@ void GameManager::invite(int const socket, std::vector<std::string> parameters)
 
                 broadcast({-1}, enums::LOGGED, enums::ALL_USERS);
             }
+        }else
+        {
+            send_queue->push(SNDMessage(socket, enums::GAME_INVITE, ERROR + SPACE + std::string("USER_CHALLENGER_NOT_FOUND")));
         }
+    }else
+    {
+        send_queue->push(SNDMessage(socket, enums::GAME_INVITE, ERROR + SPACE + std::string("USER_NOT_LOGGED")));
     }
 }
 
@@ -98,15 +110,21 @@ void GameManager::take(int const socket, std::vector<std::string> parameters)
                 }else
                 {
                     logger->info(StringUtils::format(4, "User with ID ", std::to_string(socket).c_str(), " can not take from layer ", std::to_string(layer).c_str()));
-                    send_queue->push(SNDMessage(user.socket, enums::GAME_TAKE, ERROR));
+                    send_queue->push(SNDMessage(user.socket, enums::GAME_TAKE, ERROR + SPACE + std::string("CAN_NOT_TAKE")));
                 }
 
             }else
             {
                 logger->info(StringUtils::format(3, "Player with ID ", std::to_string(socket).c_str(), " is not on turn."));
-                send_queue->push(SNDMessage(user.socket, enums::GAME_TAKE, ERROR));
+                send_queue->push(SNDMessage(user.socket, enums::GAME_TAKE, ERROR + SPACE + std::string("NOT_ON_TURN")));
             }
+        }else
+        {
+            send_queue->push(SNDMessage(socket, enums::GAME_TAKE, ERROR + SPACE + std::string("USER_DOES_NOT_PLAY")));
         }
+    }else
+    {
+        send_queue->push(SNDMessage(socket, enums::GAME_TAKE, ERROR + SPACE + std::string("USER_NOT_LOGGED")));
     }
 }
 
@@ -131,9 +149,21 @@ void GameManager::switch_user(int const socket, std::vector<std::string> paramet
 
                     send_queue->push(SNDMessage(game.onTheTurn(),    enums::GAME_SWITCH_USER, "START"));
                     send_queue->push(SNDMessage(game.onNotTheTurn(), enums::GAME_SWITCH_USER, "STOP"));
+                }else
+                {
+                    send_queue->push(SNDMessage(socket, enums::GAME_SWITCH_USER, ERROR + SPACE + std::string("NOT_ON_TURN")));
                 }
+            }else
+            {
+                send_queue->push(SNDMessage(socket, enums::GAME_SWITCH_USER, ERROR + SPACE + std::string("GAME_NOT_EXIST")));
             }
+        }else
+        {
+            send_queue->push(SNDMessage(socket, enums::GAME_SWITCH_USER, ERROR + SPACE + std::string("USER_DOES_NOT_PLAY")));
         }
+    }else
+    {
+        send_queue->push(SNDMessage(socket, enums::GAME_SWITCH_USER, ERROR + SPACE + std::string("USER_NOT_LOGGED")));
     }
 }
 
@@ -198,7 +228,13 @@ void GameManager::back(int const socket, std::vector<std::string> parameters)
                 user.state = enums::LOGGED;
                 broadcast({socket}, enums::LOGGED, enums::ALL_USERS);
             }
+        }else
+        {
+            send_queue->push(SNDMessage(socket, enums::GAME_BACK, ERROR + SPACE + std::string("USER_IS_NOT_DISCONNECTED")));
         }
+    }else
+    {
+        send_queue->push(SNDMessage(socket, enums::GAME_BACK, ERROR + SPACE + std::string("USER_NOT_LOGGED")));
     }
 }
 
@@ -242,11 +278,11 @@ void GameManager::end(int const socket, std::vector<std::string> parameters)
         }
         else
         {
-            send_queue->push(SNDMessage(user.socket, enums::GAME_END, ERROR));
+            send_queue->push(SNDMessage(socket, enums::GAME_END, ERROR + SPACE + std::string("GAME_NOT_EXIST")));
         }
     }else
     {
-        send_queue->push(SNDMessage(socket, enums::GAME_END, ERROR));
+        send_queue->push(SNDMessage(socket, enums::GAME_END, ERROR + SPACE + std::string("USER_NOT_LOGGED")));
     }
 }
 
@@ -264,12 +300,18 @@ void GameManager::state(int const socket, std::vector<std::string> parameters)
 
             if (user.socket == game.onTheTurn())
             {
-                send_queue->push(SNDMessage(user.socket, enums::GAME_STATE, ("START " + state + " " + std::to_string(game.take_counter))));
+                send_queue->push(SNDMessage(user.socket, enums::GAME_STATE, ("START " + state + SPACE + std::to_string(game.take_counter))));
             }else
             {
                 send_queue->push(SNDMessage(user.socket, enums::GAME_STATE, ("STOP " + state + " 0")));
             }
+        }else
+        {
+            send_queue->push(SNDMessage(socket, enums::GAME_STATE, ERROR + SPACE + std::string("GAME_NOT_EXIST")));
         }
+    }else
+    {
+        send_queue->push(SNDMessage(socket, enums::GAME_STATE, ERROR + SPACE + std::string("USER_NOT_LOGGED")));
     }
 }
 
@@ -284,7 +326,7 @@ void GameManager::settings(int const socket, std::vector<std::string> parameters
                                                         ",\"taking\":",std::to_string(matches_taking).c_str(),"}")));
     }else
     {
-        send_queue->push(SNDMessage(socket, enums::GAME_SETTINGS, ERROR));
+        send_queue->push(SNDMessage(socket, enums::GAME_SETTINGS, ERROR + SPACE + std::string("USER_NOT_LOGGED")));
     }
 }
 
@@ -293,39 +335,39 @@ void GameManager::finish(int const socket, std::vector<std::string> parameters)
 {
 
     User &user_win = findUserBySocket(socket);
-    Game &game = findGameBySocket(socket);
 
-    if (NULL != (&user_win) && NULL != (&game))
+    if (NULL != (&user_win))
     {
-        int adversary_socket;
+        Game &game = findGameByID(user_win.game);
 
-        if (game.onTheTurn() == user_win.socket)
+        if (NULL != (&game))
         {
-            adversary_socket = game.onNotTheTurn();
-        }else if (game.onNotTheTurn() == user_win.socket)
+            int adversary_socket = game.player_first == socket ? game.player_second : game.player_first;
+            User &user_lose = findUserBySocket(adversary_socket);
+
+            if (NULL != (&user_lose))
+            {
+                send_queue->push(SNDMessage(user_lose.socket, enums::GAME_FINISH, "LOSE"));
+                send_queue->push(SNDMessage(user_win.socket, enums::GAME_FINISH, "WIN"));
+
+                user_win.state = enums::LOGGED;
+                user_win.game = -1;
+
+                user_lose.state = enums::LOGGED;
+                user_lose.game = -1;
+
+
+                int game_index = findGameIndex(game);
+                games->remove(game_index);
+
+                broadcast({user_win.socket, user_lose.socket}, enums::LOGGED, enums::ALL_USERS);
+            }
+        }else
         {
-            adversary_socket = game.onTheTurn();
+            send_queue->push(SNDMessage(socket, enums::GAME_FINISH, ERROR + SPACE + std::string("GAME_NOT_EXIST")));
         }
-
-        User &user_lose = findUserBySocket(adversary_socket);
-
-        if (NULL != (&user_lose))
-        {
-            logger->info(StringUtils::format(4, "User with ID: ", std::to_string(user_win.socket).c_str(), " won in game ", std::to_string(game.id).c_str()));
-            send_queue->push(SNDMessage(user_lose.socket, enums::GAME_FINISH, "LOSE"));
-            send_queue->push(SNDMessage(user_win.socket,  enums::GAME_FINISH, "WIN"));
-
-            user_win.state = enums::LOGGED;
-            user_win.game = -1;
-
-            user_lose.state = enums::LOGGED;
-            user_lose.game = -1;
-
-
-            int game_index = findGameIndex(game);
-            games->remove(game_index);
-
-            broadcast({user_win.socket, user_lose.socket}, enums::LOGGED, enums::ALL_USERS);
-        }
+    }else
+    {
+        send_queue->push(SNDMessage(socket, enums::GAME_FINISH, ERROR + SPACE + std::string("USER_NOT_LOGGED")));
     }
 }

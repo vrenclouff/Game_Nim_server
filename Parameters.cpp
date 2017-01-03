@@ -48,37 +48,37 @@ void Parameters::parse(int argc, char **argv)
 
 void Parameters::printHelp()
 {
-    std::cout  << "NAME" << std::endl;
-    std::cout  << "\tnimServer - server nim game" << std::endl;
-    std::cout  << "OPTIONS" << std::endl;
+    std::cout  << "JMÉNO" << std::endl;
+    std::cout  << "\tnimServer - server hru Nim" << std::endl;
+    std::cout  << "Možnosti" << std::endl;
     std::cout  << "\t-p" << std::endl;
-    std::cout  << "\t\tport for access to server" << std::endl;
-    std::cout  << "\t\t\tdefault - 9999" << std::endl;
+    std::cout  << "\t\tčíslo portu" << std::endl;
+    std::cout  << "\t\t\tvýchozí - 9999" << std::endl;
 
     std::cout  << "\t-c" << std::endl;
-    std::cout  << "\t\tenable log to console" << std::endl;
-    std::cout  << "\t\t\tdefault - true" << std::endl;
+    std::cout  << "\t\tumožnit logování do konzole" << std::endl;
+    std::cout  << "\t\t\tvýchozí - true" << std::endl;
 
     std::cout  << "\t-f" << std::endl;
-    std::cout  << "\t\tenable log to file" << std::endl;
-    std::cout  << "\t\t\tdefault - false" << std::endl;
+    std::cout  << "\t\tumožnit logování do souboru (logfile.log)" << std::endl;
+    std::cout  << "\t\t\tvýchozí - false" << std::endl;
 
     std::cout  << "\t-l" << std::endl;
-    std::cout  << "\t\tdefine log level" << std::endl;
-    std::cout  << "\t\t\tdefault - 1" << std::endl;
+    std::cout  << "\t\túroveň logování" << std::endl;
+    std::cout  << "\t\t\tvýchozí - 1" << std::endl;
     std::cout  << "\t\t\t 0 - DEBUG" << std::endl;
     std::cout  << "\t\t\t 1 - INFO" << std::endl;
     std::cout  << "\t\t\t 2 - WARNING" << std::endl;
     std::cout  << "\t\t\t 3 - ERROR" << std::endl;
 
     std::cout  << "\t-m" << std::endl;
-    std::cout  << "\t\tnumber of layers, which will be show in game" << std::endl;
-    std::cout  << "\t\t\tdefault - 4" << std::endl;
-    std::cout  << "\t\t\t 3 - 9 matches" << std::endl;
-    std::cout  << "\t\t\t 4 - 16 matches" << std::endl;
-    std::cout  << "\t\t\t 5 - 25 matches" << std::endl;
-    std::cout  << "\t\t\t 6 - 36 matches" << std::endl;
+    std::cout  << "\t\tčíslo vrstev, které budou ve hře zobrazeny" << std::endl;
+    std::cout  << "\t\t\tvýchozí - 4" << std::endl;
+    std::cout  << "\t\t\t 3 - 9 sirek" << std::endl;
+    std::cout  << "\t\t\t 4 - 16 sirek" << std::endl;
+    std::cout  << "\t\t\t 5 - 25 sirek" << std::endl;
+    std::cout  << "\t\t\t 6 - 36 sirek" << std::endl;
 
     std::cout  << "\t-h" << std::endl;
-    std::cout  << "\t\tshow help" << std::endl;
+    std::cout  << "\t\tnápověda" << std::endl;
 }
