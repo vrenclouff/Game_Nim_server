@@ -250,23 +250,23 @@ void GameManager::end(int const socket, std::vector<std::string> parameters)
         {
             if (game.player_first != -1)
             {
-                User &game_user = findUserBySocket(game.player_first);
-                if (NULL != (&game_user))
+                User &first_player = findUserBySocket(game.player_first);
+                if (NULL != (&first_player))
                 {
-                    send_queue->push(SNDMessage(game_user.socket, enums::GAME_END, SUCCESS));
-                    game_user.state = enums::LOGGED;
-                    game_user.game = -1;
+                    send_queue->push(SNDMessage(first_player.socket, enums::GAME_END, SUCCESS));
+                    first_player.state = enums::LOGGED;
+                    first_player.game = -1;
                 }
             }
 
             if (game.player_second != -1)
             {
-                User &game_user = findUserBySocket(game.player_second);
-                if (NULL != (&game_user))
+                User &second_player = findUserBySocket(game.player_second);
+                if (NULL != (&second_player))
                 {
-                    send_queue->push(SNDMessage(game_user.socket, enums::GAME_END, SUCCESS));
-                    game_user.state = enums::LOGGED;
-                    game_user.game = -1;
+                    send_queue->push(SNDMessage(second_player.socket, enums::GAME_END, SUCCESS));
+                    second_player.state = enums::LOGGED;
+                    second_player.game = -1;
                 }
             }
 
