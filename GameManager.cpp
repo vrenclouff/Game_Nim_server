@@ -274,7 +274,7 @@ void GameManager::end(int const socket, std::vector<std::string> parameters)
             int game_index = findGameIndex(game);
             games->remove(game_index);
 
-            broadcast({socket}, enums::LOGGED, enums::ALL_USERS);
+ //           broadcast({socket}, enums::LOGGED, enums::ALL_USERS);
         }
         else
         {
