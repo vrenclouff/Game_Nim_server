@@ -177,42 +177,28 @@ void NetworkService::validationMessage(std::string const &original_message, std:
     logger->debug(StringUtils::format(2, "Validation receive message: ", original_message.c_str()));
 
     /* Kontrola minimalni delky zpravy */
-    if (original_message.length() < 3)
+    if (original_message.length() < 2)
     {
-        logger->debug("The message does not have correct length.");
-        return;
+        logger->debug("The message does not have correct length.");return;
     }
 
     /* Kontrola pocatecniho znacky zpravy */
-    char stx_mark = original_message[1];
+    char stx_mark = original_message[0];
     if (stx_mark != STX)
     {
-        logger->debug("The message does not have STX mark.");
-        return;
+        logger->debug("The message does not have STX mark.");return;
     }
 
     char temp[original_message.length()];
     char c;
     int i;
-    long check_sum = 0;
     bool start_end_mark = false;
-    char checksum_result;
-    char checksum_init = original_message[0];
 
     /* Kontrola konecne znacky zpravy a checksumy */
-    for(i = 0; i < original_message.length()-2; i++)
+    for(i = 0; i < original_message.length()-1; i++)
     {
-        if ((c = original_message[i+2]) == ETX) { start_end_mark = true; break; }
-        check_sum += c;
+        if ((c = original_message[i+1]) == ETX) { start_end_mark = true; break; }
         temp[i] = c;
-    }
-
-    checksum_result = check_sum % CHECKSUM;
-    checksum_result = (checksum_result + 1) % SCHAR_MAX;
-    if (checksum_init != checksum_result)
-    {
-        logger->debug("The message does not valid by checksum.");
-        return;
     }
 
     if (!start_end_mark)
@@ -243,7 +229,7 @@ void NetworkService::validationMessage(std::string const &original_message, std:
     validated_messages.push_back(validated_message);
     logger->debug("The message is successful validated.");
 
-    int start = validated_message.size() + 1 + 1 + 1;
+    int start = validated_message.size() + 1 + 1;
     int end = original_message.size() - start;
     std::string next_message = original_message.substr(start, end);
 
